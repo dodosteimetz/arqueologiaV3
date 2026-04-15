@@ -16,18 +16,21 @@
 <body class="min-h-screen bg-slate-950">
   
   <header class="sticky top-0 z-50 border-b border-yellow-500/20 bg-slate-950/90 backdrop-blur-md px-4 py-4">
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent">RS3 Archaeology Guide</h1>
-      </div>
-      <div class="flex items-center gap-4 bg-slate-900 rounded-lg p-3 border border-yellow-500/20">
-        <div class="text-center">
-          <div class="text-xs text-slate-400">Nível de Arqueologia</div>
-          <div class="text-2xl font-bold text-yellow-400" id="current-level-display">99</div>
-        </div>
-        <input type="range" id="level-input" min="1" max="120" value="99" class="w-32 md:w-48 accent-yellow-500">
-      </div>
-    </div>
+    <div class="flex flex-col md:flex-row items-center gap-4 bg-slate-900 rounded-lg p-3 border border-yellow-500/20">
+  
+  <div class="flex items-center gap-2">
+    <input type="text" id="playerName" placeholder="Nome do Jogador" class="bg-slate-800 text-slate-200 px-3 py-1.5 rounded border border-slate-700 focus:outline-none focus:border-yellow-500 text-sm">
+    <button id="buscarBtn" class="bg-yellow-600 hover:bg-yellow-500 text-black px-3 py-1.5 rounded font-bold text-sm transition-colors whitespace-nowrap">
+      <i class="fa-solid fa-magnifying-glass mr-1"></i>Buscar
+    </button>
+  </div>
+  
+  <div class="hidden md:block w-px h-8 bg-slate-700"></div> <div class="flex items-center gap-2">
+    <label for="level-input" class="text-sm text-slate-400 whitespace-nowrap">Nível (Manual):</label>
+    <input type="number" id="level-input" min="1" max="120" value="99" class="w-16 bg-slate-800 text-yellow-400 font-bold text-center px-2 py-1.5 rounded border border-slate-700 focus:outline-none focus:border-yellow-500">
+  </div>
+
+</div>
     
     <nav class="max-w-7xl mx-auto mt-4 flex gap-2 overflow-x-auto">
       <button data-tab="overview" class="tab-btn px-4 py-2 bg-yellow-500 text-black font-bold rounded-md"><i class="fa-solid fa-chart-pie mr-2"></i>Visão Geral</button>
