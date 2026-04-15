@@ -6,23 +6,92 @@ import renderCollections from './tabs/collections.js';
 import renderResearch from './tabs/research.js';
 
 const tabContent = document.getElementById('tab-content');
-const levelInput = document.getElementById('level-input');
-const levelDisplay = document.getElementById('current-level-display');
 const tabButtons = document.querySelectorAll('.tab-btn');
+
+// Novos elementos do HTML
+const levelInput = document.getElementById('level-input');
+const playerNameInput = document.getElementById('playerName');
+const buscarBtn = document.getElementById('buscarBtn');
 
 let currentTab = 'overview';
 
-// Atualizar Input
+// 1. Iniciar Input com o valor salvo
 levelInput.value = store.level;
-levelDisplay.textContent = store.level;
 
+// 2. Mudança Manual de Nível
 levelInput.addEventListener('input', (e) => {
-    const val = e.target.value;
-    levelDisplay.textContent = val;
+    let val = parseInt(e.target.value);
+    if(isNaN(val) || val < 1) val = 1;
+    if(val > 120) val = 120; // Cap no 120 para Arqueologia
     store.setLevel(val);
 });
 
-// Trocar de Aba
+// 3. Busca na API do RuneScape
+buscarBtn.addEventListener('click', async () => {
+    const name = playerNameInput.value.trim();
+    if(!name) {
+        alert("Digite o nome do jogador.");
+        return;
+    }
+
+    const origText = buscarBtn.innerHTML;
+    buscarBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Buscando...';
+    buscarBtn.disabled = true;
+
+    try {
+        const rsUrl = "https://secure.runescape.com/m=hiscore/index_lite.ws?player=" + encodeURIComponent(name);
+        const url = "https://corsproxy.io/?" + encodeURIComponent(rsUrl);
+
+        const res = await fetch(url);
+        if(!res.ok) {
+            alert("Jogador não encontrado ou perfil privado.");
+            buscarBtn.innerHTML = origText; 
+            buscarBtn.disabled = false;
+            return;
+        }
+
+        const text = await res.text();
+        const lines = text.split("\n");
+
+        // Índice 28 na API do RS3 é Arqueologia
+        const arch_INDEX = 28;
+
+        if(!lines[arch_INDEX]) {
+            alert("Erro ao ler dados da skill.");
+            buscarBtn.innerHTML = origText; 
+            buscarBtn.disabled = false;
+            return;
+        }
+
+        const parts = lines[arch_INDEX].split(",");
+        const nivel = parseInt(parts[1]); // parts[1] é o Nível (parts[2] seria XP)
+
+        if(isNaN(nivel) || nivel < 1) {
+            alert("Erro ao obter o nível de Arqueologia deste jogador.");
+            buscarBtn.innerHTML = origText; 
+            buscarBtn.disabled = false;
+            return;
+        }
+
+        // Atualiza a tela e o Store
+        levelInput.value = nivel;
+        store.setLevel(nivel);
+        
+        buscarBtn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Carregado!';
+        setTimeout(() => { 
+            buscarBtn.innerHTML = origText; 
+            buscarBtn.disabled = false; 
+        }, 2000);
+
+    } catch(err) {
+        console.error(err);
+        alert("Erro ao buscar dados. Verifique sua conexão ou tente novamente.");
+        buscarBtn.innerHTML = origText;
+        buscarBtn.disabled = false;
+    }
+});
+
+// 4. Lógica das Abas (Navegação)
 tabButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
         currentTab = e.currentTarget.dataset.tab;
@@ -42,7 +111,7 @@ function updateTabUI() {
 }
 
 function renderCurrentTab() {
-    tabContent.innerHTML = ''; // Limpar aba
+    tabContent.innerHTML = '';
     switch (currentTab) {
         case 'overview': renderOverview(tabContent); break;
         case 'mysteries': renderMysteries(tabContent); break;
@@ -52,16 +121,16 @@ function renderCurrentTab() {
     }
 }
 
-// Re-renderizar quando o store atualizar (nível mudar ou item for marcado)
+// Re-renderizar abas quando o state/nível mudar
 store.subscribe(() => {
     renderCurrentTab();
 });
 
-// Iniciar app
+// Iniciar app visualmente
 updateTabUI();
 renderCurrentTab();
 
-// Torna o toggle disponível globalmente para os botões no HTML
+// Tornar a função global para os botões gerados dinamicamente
 window.toggleItem = (id) => {
     store.toggleDone(id);
 };
